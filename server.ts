@@ -5,12 +5,12 @@ import dotenv from "dotenv";
 import connectDatabase from "./config/database";
 import authRouter from "./routes/auth";
 
+dotenv.config();
+connectDatabase();
 const PORT = process.env.PORT || 5000;
 
 const app = express();
 
-connectDatabase();
-dotenv.config();
 app.use(express.json());
 app.use(cors());
 
