@@ -6,7 +6,8 @@ import crypto from "crypto";
 import { RegisterUser } from "../interfaces";
 import { registrationValidation } from "../utils/validation";
 import User from "../models/User";
-import redisClient from "../config/redis";
+import redis from "../config/redis";
+import { sendEmail } from "../utils/nodemailer";
 
 router.post("/register", async (req, res) => {
   const { email, username, password }: RegisterUser = req.body;
@@ -45,32 +46,25 @@ router.post("/register", async (req, res) => {
     });
 
     const { _id } = await user.save();
-    console.log(typeof _id);
+
     const emailHash = crypto
       .createHash("md5")
       .update(_id.toString())
       .digest("hex");
 
     // Send email for activation
+    sendEmail(email, emailHash);
 
     // Save the hash in redis along with userid
-    redisClient.hmset(
-      _id.toString(),
-      ["emailHash", emailHash],
-      function (err, reply) {
-        if (err) {
-          console.log(err);
-        }
-        console.log(reply);
-      }
-    );
+    await redis.set(emailHash, _id.toString());
 
     return res.status(200).json({
       id: _id,
       message: "Email containing link for account activation has been sent!",
     });
+
+    // Catch
   } catch (err) {
-    console.error(err.trace);
     console.error(err.message);
     return res.status(500).json({
       error: "Server error",
@@ -78,15 +72,14 @@ router.post("/register", async (req, res) => {
   }
 });
 
-router.get("/:id", async (req, res) => {
-  redisClient.hgetall(req.params.id, function (err, obj) {
-    if (!obj) {
-      console.log("not found");
-    } else {
-      console.log(obj.emailHash);
-    }
-  });
-  return res.status(200);
+router.get("/verify/:hash", async (req, res) => {
+  const hash = req.params.hash;
+  try {
+    const id = await redis.get(hash);
+    // id is userid
+  } catch (err) {
+    console.error(err.message);
+  }
 });
 
 export default router;
