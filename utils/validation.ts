@@ -45,3 +45,22 @@ export const resetPassword: RequestHandler = (req, res, next) => {
     return res.status(400).json({ error: "Enter a valid password" });
   next();
 };
+
+export const changePassword: RequestHandler = (req, res, next) => {
+  if (!req.body.oldPassword)
+    return res.status(400).json({ error: "Invalid old password" });
+
+  if (
+    !req.body.newPassword ||
+    !req.body.newPassword.match(
+      /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,16}$/
+    )
+  )
+    return res.status(400).json({ error: "Invalid new password" });
+  if (req.body.oldPassword === req.body.newPassword)
+    return res
+      .status(400)
+      .json({ error: "New password cannot be same as old password" });
+
+  next();
+};
