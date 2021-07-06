@@ -6,8 +6,12 @@ import jwt from "jsonwebtoken";
 
 import User from "../models/User";
 import redis from "../config/redis";
-import { RegisterUser, CustomRequest } from "../interfaces";
-import { registrationValidation, loginValidation } from "../utils/validation";
+import { RegisterUser } from "../interfaces";
+import {
+  registrationValidation,
+  loginValidation,
+  resetPassword,
+} from "../utils/validation";
 import { sendEmail } from "../utils/nodemailer";
 
 // @route   POST /auth/register
@@ -57,7 +61,11 @@ router.post("/register", async (req, res) => {
       .digest("hex");
 
     // Send email for activation
-    sendEmail(email, emailHash);
+    const html = `<p>Click on the link given below to verify your Booktracker account</p>
+    <a href='http://localhost:5000/auth/verify/${emailHash}'>Verify account</a>`;
+
+    const subject = "Booktracker Account Validation";
+    sendEmail(email, html, subject);
 
     // Save the hash in redis along with userid
     await redis.set(emailHash, _id.toString(), "ex", 60 * 60 * 24);
@@ -167,6 +175,94 @@ router.post("/login", loginValidation, async (req, res) => {
     // Send accessToken
     return res.status(200).json({
       token: accessToken,
+    });
+  } catch (err) {
+    console.error(err.message);
+    return res.status(500).json({
+      error: "Server error",
+    });
+  }
+});
+
+// @route   POST /auth/forgot-password
+// @desc    Send email containing link to reset password
+// @access  Public
+router.post("/forgot-password", async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email }).select("_id");
+    if (!user)
+      return res.status(400).json({ error: "Some error has occurred" });
+
+    console.log(user);
+
+    // Create hash to save in redis
+    const hash = crypto
+      .createHash("md5")
+      .update(user._id.toString())
+      .digest("hex");
+
+    // Save the hash in redis along with userid
+    await redis.set(
+      `${process.env.FORGOT_PASSWORD}:${hash}`,
+      user._id.toString(),
+      "ex",
+      60 * 60 * 15
+    );
+
+    // Send email to reset password
+    const html = `<p>Click on the link given below to reset your Booktracker password</p>
+    <a href='http://localhost:5000/auth/reset-password/${hash}'>Reset password</a>`;
+    const subject = "Reset Password for your Booktracker Account";
+    sendEmail(email, html, subject);
+
+    return res.status(200).json({
+      message: "Email containing link to reset password has been sent",
+    });
+  } catch (err) {
+    console.log(err.message);
+    return res.status(500).json({ error: "Server error" });
+  }
+});
+
+// @route   POST /auth/reset-password
+// @desc    Reset password
+// @access  Public
+router.post("/reset-password/:hash", resetPassword, async (req, res) => {
+  const hash = req.params.hash;
+  const { password } = req.body;
+  try {
+    // Get the user id from hash
+    const id = await redis.get(`${process.env.FORGOT_PASSWORD}:${hash}`);
+    await redis.del(`${process.env.FORGOT_PASSWORD}:${hash}`);
+    if (!id)
+      return res.status(400).json({
+        error: "Some error has occurred",
+      });
+
+    // Get current password
+    const user = await User.findOne({ _id: id }).select("password");
+    const match = await bcrypt.compare(password, user.password);
+
+    // Same password
+    if (match)
+      return res
+        .status(400)
+        .json({ error: "New password cannot be same as old password" });
+
+    // Encrypt the new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    await User.findOneAndUpdate(
+      { _id: id },
+      { password: hashedPassword, loggedIn: false },
+      { new: true }
+    );
+
+    return res.status(200).json({
+      message: "Password has been reset successfully!",
     });
   } catch (err) {
     console.error(err.message);

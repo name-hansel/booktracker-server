@@ -34,3 +34,14 @@ export const loginValidation: RequestHandler = (req, res, next) => {
     });
   next();
 };
+
+export const resetPassword: RequestHandler = (req, res, next) => {
+  if (
+    !req.body.password ||
+    !req.body.password.match(
+      /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,16}$/
+    )
+  )
+    return res.status(400).json({ error: "Enter a valid password" });
+  next();
+};

@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 
-export const sendEmail = (to: string, hash: string) => {
+export const sendEmail = (to: string, html: string, subject: string) => {
   const transporter = nodemailer.createTransport({
     host: "smtp-mail.outlook.com",
     port: 587,
@@ -15,14 +15,9 @@ export const sendEmail = (to: string, hash: string) => {
   let mailOptions = {
     from: '"Booktracker " <hansel-name@outlook.com>',
     to,
-    html: `
-    <p>Click on the link given below to verify your account</p>
-    <a href='http://localhost:5000/auth/verify/${hash}'>Verify account</a>
-    `,
-    subject: "Booktracker Account Validation",
+    html,
+    subject,
   };
-
-  let result: string = "";
 
   transporter.sendMail(mailOptions, function (error, info) {
     if (error) {
@@ -31,6 +26,4 @@ export const sendEmail = (to: string, hash: string) => {
       console.log("Email sent");
     }
   });
-
-  return result;
 };
