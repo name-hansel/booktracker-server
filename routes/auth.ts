@@ -4,10 +4,10 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 
-import { RegisterUser } from "../interfaces";
-import { registrationValidation, loginValidation } from "../utils/validation";
 import User from "../models/User";
 import redis from "../config/redis";
+import { RegisterUser, CustomRequest } from "../interfaces";
+import { registrationValidation, loginValidation } from "../utils/validation";
 import { sendEmail } from "../utils/nodemailer";
 
 // @route   POST /auth/register
@@ -157,13 +157,15 @@ router.post("/login", loginValidation, async (req, res) => {
       httpOnly: true,
     };
 
+    // Set loggedIn as true
+    user.loggedIn = true;
+    await user.save();
+
     // Set cookie
     res.cookie("refresh-token", refreshToken, options);
 
     // Send accessToken
     return res.status(200).json({
-      id: user._id,
-      username: user.username,
       token: accessToken,
     });
   } catch (err) {

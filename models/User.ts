@@ -19,6 +19,10 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  loggedIn: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 const User = mongoose.model("user", userSchema);
