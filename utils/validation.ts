@@ -7,8 +7,13 @@ export const registrationValidation = ({
   email,
   password,
 }: RegisterUser) => {
-  if (!username || username.length < 6 || username.length > 32)
-    return "Invalid username";
+  if (
+    !username ||
+    username.length < 6 ||
+    username.length > 32 ||
+    !username.match(/^(?=[a-zA-Z0-9._]{6,32}$)(?!.*[_.]{2})[^_].*[^_.]$/)
+  )
+    return "Username can contain only letter, number and underscore. Length should be between 6 and 32.";
   if (
     !email ||
     !email.match(

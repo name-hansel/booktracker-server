@@ -32,7 +32,7 @@ router.post("/register", async (req, res) => {
     const usernameExists = await User.findOne({ username });
     if (usernameExists)
       return res.status(400).send({
-        error: "Please choose another username",
+        error: "Username already exists.Please choose another username.",
       });
 
     // Check if email exists
@@ -71,7 +71,6 @@ router.post("/register", async (req, res) => {
     await redis.set(emailHash, _id.toString(), "ex", 60 * 60 * 24);
 
     return res.status(200).json({
-      id: _id,
       message: "Email containing link for account activation has been sent!",
     });
 

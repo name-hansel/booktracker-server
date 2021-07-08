@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema({
   },
   loggedIn: {
     type: Boolean,
-    default: true,
+    default: false,
   },
 });
 

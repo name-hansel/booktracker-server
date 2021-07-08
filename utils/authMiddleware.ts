@@ -1,6 +1,7 @@
 import { RequestHandler, Request, Response } from "express";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 
+import User from "../models/User";
 import { CustomRequest, TokenInterface } from "../interfaces";
 
 const auth: RequestHandler = async (req: CustomRequest, res, next) => {
@@ -21,6 +22,10 @@ const auth: RequestHandler = async (req: CustomRequest, res, next) => {
 
     // Set user id in req
     req.id = decoded.user_id;
+
+    // Check loggedIn
+    const res = await User.findOne({ _id: decoded.user_id }).select("loggedIn");
+    console.log(`CHECKED LOGGEDIN BRO CHANGE THIS!!! ${res}`);
 
     // Go back to API route
     next();
