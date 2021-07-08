@@ -8,7 +8,20 @@ import auth from "../utils/authMiddleware";
 import { CustomRequest } from "../interfaces";
 import { changePassword } from "../utils/validation";
 
-// @route   GET /user/
+// @route   GET /user/logout
+// @desc    Set cookie to none
+// @access  Private
+router.post("/logout", auth, (req, res) => {
+  res.cookie("refresh-token", "", {
+    httpOnly: true,
+    expires: new Date(),
+  });
+  res.send(200).json({
+    message: "User logged out successfully!",
+  });
+});
+
+// @route   GET /user
 // @desc    Get current user's profile
 // @access  Private
 router.get("/", auth, async (req: CustomRequest, res: Response) => {
