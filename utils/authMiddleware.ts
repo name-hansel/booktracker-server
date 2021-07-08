@@ -5,11 +5,11 @@ import User from "../models/User";
 import { CustomRequest, TokenInterface } from "../interfaces";
 
 const auth: RequestHandler = async (req: CustomRequest, res, next) => {
-  if (!req.get("Authorization"))
+  if (!req.header("Authorization"))
     return res.status(401).json({ error: "No auth header supplied" });
 
   // Get access token
-  const token = req.get("Authorization")!.split(" ")[1];
+  const token = req.header("Authorization")!.split(" ")[1];
 
   // No token in header
   if (!token) return res.status(401).json({ error: "No token supplied" });

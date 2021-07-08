@@ -31,14 +31,14 @@ router.post("/register", async (req, res) => {
     // Check if username exists
     const usernameExists = await User.findOne({ username });
     if (usernameExists)
-      return res.status(400).send({
-        error: "Username already exists.Please choose another username.",
+      return res.status(400).json({
+        error: "Username already exists. Please choose another username.",
       });
 
     // Check if email exists
     const emailExists = await User.findOne({ email });
     if (emailExists)
-      return res.status(400).send({
+      return res.status(400).json({
         error: "Some error has occurred",
       });
 
@@ -62,7 +62,7 @@ router.post("/register", async (req, res) => {
 
     // Send email for activation
     const html = `<p>Click on the link given below to verify your Booktracker account</p>
-    <a href='http://localhost:5000/auth/verify/${emailHash}'>Verify account</a>`;
+    <a href='http://localhost:3000/verify/${emailHash}'>Verify account</a>`;
 
     const subject = "Booktracker Account Validation";
     sendEmail(email, html, subject);
@@ -212,7 +212,7 @@ router.post("/forgot-password", async (req, res) => {
 
     // Send email to reset password
     const html = `<p>Click on the link given below to reset your Booktracker password</p>
-    <a href='http://localhost:5000/auth/reset-password/${hash}'>Reset password</a>`;
+    <a href='http://localhost:3000/reset-password/${hash}'>Reset password</a>`;
     const subject = "Reset Password for your Booktracker Account";
     sendEmail(email, html, subject);
 
