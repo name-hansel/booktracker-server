@@ -24,8 +24,13 @@ const auth: RequestHandler = async (req: CustomRequest, res, next) => {
     req.id = decoded.user_id;
 
     // Check loggedIn
-    const res = await User.findOne({ _id: decoded.user_id }).select("loggedIn");
-    console.log(`CHECKED LOGGEDIN BRO CHANGE THIS!!! ${res}`);
+    const { loggedIn } = await User.findOne({ _id: decoded.user_id }).select(
+      "loggedIn"
+    );
+    if (!loggedIn)
+      return res.status(400).json({
+        error: "Oops! An error has occurred!",
+      });
 
     // Go back to API route
     return next();

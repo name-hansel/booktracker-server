@@ -206,7 +206,7 @@ router.post("/forgot-password", async (req, res) => {
       `${process.env.FORGOT_PASSWORD}:${hash}`,
       user._id.toString(),
       "ex",
-      60 * 15
+      60 * 60 * 15
     );
 
     // Send email to reset password
@@ -233,7 +233,6 @@ router.post("/reset-password/:hash", resetPassword, async (req, res) => {
   try {
     // Get the user id from hash
     const id = await redis.get(`${process.env.FORGOT_PASSWORD}:${hash}`);
-    await redis.del(`${process.env.FORGOT_PASSWORD}:${hash}`);
     if (!id)
       return res.status(400).json({
         error: "Invalid or expired link",
@@ -258,9 +257,9 @@ router.post("/reset-password/:hash", resetPassword, async (req, res) => {
       { password: hashedPassword, loggedIn: false },
       { new: true }
     );
-
+    await redis.del(`${process.env.FORGOT_PASSWORD}:${hash}`);
     return res.status(200).json({
-      message: "Password has been reset successfully!",
+      message: "Password has been reset successfully! Redirecting to login...",
     });
   } catch (err) {
     console.error(err.message);

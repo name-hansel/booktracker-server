@@ -57,7 +57,6 @@ router.post(
       const hashedPassword = await bcrypt.hash(newPassword, salt);
 
       user.password = hashedPassword;
-      user.loggedIn = false;
       await user.save();
 
       return res
