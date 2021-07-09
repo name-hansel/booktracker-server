@@ -28,7 +28,7 @@ const auth: RequestHandler = async (req: CustomRequest, res, next) => {
     console.log(`CHECKED LOGGEDIN BRO CHANGE THIS!!! ${res}`);
 
     // Go back to API route
-    next();
+    return next();
   } catch (err) {
     // Access token has expired
     if (err.message === "jwt expired") {

@@ -160,13 +160,14 @@ router.post("/login", loginValidation, async (req, res) => {
       }
     );
 
-    const options = {
-      httpOnly: true,
-    };
-
     // Set loggedIn as true
     user.loggedIn = true;
     await user.save();
+
+    const options = {
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24 * 5,
+    };
 
     // Set cookie
     res.cookie("refresh-token", refreshToken, options);
@@ -194,8 +195,6 @@ router.post("/forgot-password", async (req, res) => {
     if (!user)
       return res.status(400).json({ error: "Some error has occurred" });
 
-    console.log(user);
-
     // Create hash to save in redis
     const hash = crypto
       .createHash("md5")
@@ -207,7 +206,7 @@ router.post("/forgot-password", async (req, res) => {
       `${process.env.FORGOT_PASSWORD}:${hash}`,
       user._id.toString(),
       "ex",
-      60 * 60 * 15
+      60 * 15
     );
 
     // Send email to reset password
@@ -217,7 +216,7 @@ router.post("/forgot-password", async (req, res) => {
     sendEmail(email, html, subject);
 
     return res.status(200).json({
-      message: "Email containing link to reset password has been sent",
+      message: "Email containing link to reset password has been sent!",
     });
   } catch (err) {
     console.log(err.message);
@@ -237,7 +236,7 @@ router.post("/reset-password/:hash", resetPassword, async (req, res) => {
     await redis.del(`${process.env.FORGOT_PASSWORD}:${hash}`);
     if (!id)
       return res.status(400).json({
-        error: "Some error has occurred",
+        error: "Invalid or expired link",
       });
 
     // Get current password
@@ -269,6 +268,19 @@ router.post("/reset-password/:hash", resetPassword, async (req, res) => {
       error: "Server error",
     });
   }
+});
+
+// @route   GET /auth/logout
+// @desc    Set cookie to none
+// @access  Public
+router.post("/logout", (req, res) => {
+  res.cookie("refresh-token", "", {
+    httpOnly: true,
+    expires: new Date(),
+  });
+  return res.status(200).json({
+    message: "User logged out successfully!",
+  });
 });
 
 export default router;
