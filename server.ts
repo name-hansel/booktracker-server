@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import connectDatabase from "./config/database";
 import authRouter from "./routes/auth";
 import userRouter from "./routes/user";
+import bookRouter from "./routes/books";
 
 dotenv.config();
 connectDatabase();
@@ -24,6 +25,7 @@ app.use(
 
 app.use("/auth", authRouter);
 app.use("/user", userRouter);
+app.use("/book", bookRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello");

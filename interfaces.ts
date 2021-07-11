@@ -15,3 +15,15 @@ export interface CustomRequest extends Request {
 export interface TokenInterface extends jwt.JwtPayload {
   user_id: string;
 }
+
+export interface Book {
+  id: string;
+  volumeInfo: {
+    title: string;
+    authors: string[];
+    publishedDate: string;
+    imageLinks: {
+      thumbnail: string;
+    };
+  };
+}
