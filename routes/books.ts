@@ -67,10 +67,7 @@ router.get("/search/:id", async (req, res) => {
 
   // Check if present in cache
   const data = await bookClient.get(id);
-  if (data !== null)
-    return res.status(200).json({
-      books: JSON.parse(data),
-    });
+  if (data !== null) return res.status(200).json(JSON.parse(data));
 
   try {
     const {

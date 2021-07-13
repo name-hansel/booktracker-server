@@ -5,6 +5,7 @@ import crypto from "crypto";
 import jwt from "jsonwebtoken";
 
 import User from "../models/User";
+import Library from "../models/Library";
 import redis from "../config/redis";
 import { RegisterUser } from "../interfaces";
 import {
@@ -69,6 +70,10 @@ router.post("/register", async (req, res) => {
 
     // Save the hash in redis along with userid
     await redis.set(emailHash, _id.toString(), "ex", 60 * 60 * 24);
+
+    // Create library
+    const library = new Library({ user: _id });
+    await library.save();
 
     return res.status(200).json({
       message: "Email containing link for account activation has been sent!",

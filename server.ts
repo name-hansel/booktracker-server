@@ -7,6 +7,7 @@ import connectDatabase from "./config/database";
 import authRouter from "./routes/auth";
 import userRouter from "./routes/user";
 import bookRouter from "./routes/books";
+import libraryRouter from "./routes/library";
 
 dotenv.config();
 connectDatabase();
@@ -26,6 +27,7 @@ app.use(
 app.use("/auth", authRouter);
 app.use("/user", userRouter);
 app.use("/book", bookRouter);
+app.use("/library", libraryRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello");
