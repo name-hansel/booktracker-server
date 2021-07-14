@@ -7,6 +7,7 @@ import User from "../models/User";
 import auth from "../utils/authMiddleware";
 import { CustomRequest } from "../interfaces";
 import { changePassword } from "../utils/validation";
+import { sendEmail } from "../utils/nodemailer";
 
 // @route   GET /user
 // @desc    Get current user's profile
@@ -45,7 +46,7 @@ router.post(
       const { oldPassword, newPassword } = req.body;
 
       // Get password
-      const user = await User.findOne({ _id: req.id });
+      const user = await User.findOne({ _id: req.id }).select("password email");
       const match = await bcrypt.compare(oldPassword, user.password);
 
       // Old password does not match
@@ -58,6 +59,14 @@ router.post(
 
       user.password = hashedPassword;
       await user.save();
+
+      let date = new Date();
+
+      // Send email that password has been changed
+      const html = `<p>Password for your Booktracker account was changed at ${date.toLocaleTimeString()} ${date.toLocaleDateString()}</p>`;
+
+      const subject = "Booktracker Account Changes";
+      sendEmail(user.email, html, subject);
 
       return res
         .status(200)

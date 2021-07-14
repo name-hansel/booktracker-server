@@ -244,7 +244,7 @@ router.post("/reset-password/:hash", resetPassword, async (req, res) => {
       });
 
     // Get current password
-    const user = await User.findOne({ _id: id }).select("password");
+    const user = await User.findOne({ _id: id }).select("email password");
     const match = await bcrypt.compare(password, user.password);
 
     // Same password
@@ -262,7 +262,17 @@ router.post("/reset-password/:hash", resetPassword, async (req, res) => {
       { password: hashedPassword, loggedIn: false },
       { new: true }
     );
+
     await redis.del(`${process.env.FORGOT_PASSWORD}:${hash}`);
+
+    let date = new Date();
+
+    // Send email that password has been changed
+    const html = `<p>Password for your Booktracker account was changed at ${date.toLocaleTimeString()} ${date.toLocaleDateString()}</p>`;
+
+    const subject = "Booktracker Account Changes";
+    sendEmail(user.email, html, subject);
+
     return res.status(200).json({
       message: "Password has been reset successfully! Redirecting to login...",
     });
