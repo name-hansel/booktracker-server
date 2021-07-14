@@ -101,7 +101,7 @@ router.get("/search/:id", async (req, res) => {
       categories,
       averageRating,
       ratingsCount,
-      imageUrl: imageLinks ? imageLinks.thumbnail : "",
+      imageURL: imageLinks ? imageLinks.thumbnail : "",
     };
 
     // Set cache
