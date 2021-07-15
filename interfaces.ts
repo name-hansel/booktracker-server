@@ -27,3 +27,11 @@ export interface Book {
     };
   };
 }
+
+export interface LibraryBook {
+  googleBooksId: string;
+  title: string;
+  authors: string[];
+  addedAt?: string;
+  imageURL: string;
+}
