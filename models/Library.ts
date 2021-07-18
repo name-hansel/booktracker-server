@@ -1,4 +1,18 @@
 import mongoose from "mongoose";
+import { User } from "./User";
+
+interface Library {
+  user: User["_id"];
+  books: [
+    {
+      googleBooksId: string;
+      title: string;
+      authors: string[];
+      imageURL: string;
+      addedAt: Date;
+    }
+  ];
+}
 
 const librarySchema = new mongoose.Schema({
   user: {
