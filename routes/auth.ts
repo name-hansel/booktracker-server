@@ -88,6 +88,52 @@ router.post("/register", async (req, res) => {
   }
 });
 
+// @route   POST /auth/resend-verification
+// @desc    Resend verification link
+// @access  Public
+router.post("/resend-verification", async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await User.findOne({ email }).select("-password");
+
+    // No account with email found
+    if (!user)
+      return res.status(400).json({
+        message: "Some error has occurred",
+      });
+
+    // Account already activated
+    if (user.activated)
+      return res.status(400).json({
+        message: "Account is already active",
+      });
+
+    const emailHash = crypto
+      .createHash("md5")
+      .update(user._id.toString())
+      .digest("hex");
+
+    // Send email for activation
+    const html = `<p>Click on the link given below to verify your Booktracker account</p>
+    <a href='http://localhost:3000/verify/${emailHash}'>Verify account</a>`;
+
+    const subject = "Booktracker Account Validation";
+    sendEmail(email, html, subject);
+
+    // Save the hash in redis along with userid
+    await redis.set(emailHash, user._id.toString(), "ex", 60 * 60 * 24);
+
+    return res.status(200).json({
+      message: "Email containing link for account activation has been sent!",
+    });
+  } catch (err) {
+    console.error(err.message);
+    return res.status(500).json({
+      error: "Server error",
+    });
+  }
+});
+
 // @route   GET /auth/verify/:hash
 // @desc    Verify account
 // @access  Public
