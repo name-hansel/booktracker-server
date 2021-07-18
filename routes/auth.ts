@@ -291,6 +291,12 @@ router.post("/reset-password/:hash", resetPassword, async (req, res) => {
 
     // Get current password
     const user = await User.findOne({ _id: id }).select("email password");
+
+    if (!user)
+      return res.status(400).json({
+        message: "Some error has occurred",
+      });
+
     const match = await bcrypt.compare(password, user.password);
 
     // Same password

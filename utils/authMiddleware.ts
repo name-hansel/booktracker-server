@@ -24,10 +24,14 @@ const auth: RequestHandler = async (req: CustomRequest, res, next) => {
     req.id = decoded.user_id;
 
     // Check loggedIn
-    const { loggedIn } = await User.findOne({ _id: decoded.user_id }).select(
+    const user = await User.findOne({ _id: decoded.user_id }).select(
       "loggedIn"
     );
-    if (!loggedIn)
+
+    if (!user)
+      return res.status(400).json({ message: "Some error has occurred" });
+
+    if (!user.loggedIn)
       return res.status(400).json({
         error: "Oops! An error has occurred!",
       });
