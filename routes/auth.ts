@@ -99,13 +99,13 @@ router.post("/resend-verification", async (req, res) => {
     // No account with email found
     if (!user)
       return res.status(400).json({
-        message: "Some error has occurred",
+        error: "Some error has occurred",
       });
 
     // Account already activated
     if (user.activated)
       return res.status(400).json({
-        message: "Account is already active",
+        error: "Account is already active",
       });
 
     const emailHash = crypto
@@ -294,7 +294,7 @@ router.post("/reset-password/:hash", resetPassword, async (req, res) => {
 
     if (!user)
       return res.status(400).json({
-        message: "Some error has occurred",
+        error: "Some error has occurred",
       });
 
     const match = await bcrypt.compare(password, user.password);
